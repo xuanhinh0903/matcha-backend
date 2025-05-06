@@ -1,0 +1,35 @@
+version: '3.8'
+
+services:
+  app:
+    container_name: matcha-app
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    ports:
+      - '3030:3030'
+    depends_on:
+      - redis
+      - elasticsearch
+    environment:
+      - NODE_ENV=production
+    env_file:
+      - .env
+    # Memory limits to work well on t3.micro
+    deploy:
+      resources:
+        limits:
+          memory: 400M
+        reservations:
+          memory: 200M
+
+volumes:
+  redis-data:
+    driver: local
+  elasticsearch-data:
+    driver: local
+
+networks:
+  app-network:
+    driver: bridge
