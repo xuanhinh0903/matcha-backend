@@ -1,0 +1,1 @@
+# No outputs needed, all outputs are in main.tf now

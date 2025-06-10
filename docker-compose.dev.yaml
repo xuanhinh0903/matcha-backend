@@ -1,0 +1,140 @@
+version: '3.9'
+services:
+  postgis:
+    container_name: matcha-postgis
+    image: postgis/postgis:latest
+    platform: linux/amd64
+    ports:
+      - '5433:5432' # Changed host port to 5433 to avoid conflicts with local PostgreSQL
+    volumes:
+      - postgis-data:/var/lib/postgresql/data
+    env_file:
+      - docker.env
+    networks:
+      # - postgres
+      - matcha-network
+
+  pgadmin:
+    links:
+      - postgis:postgis
+    container_name: matcha-pgadmin
+    image: dpage/pgadmin4
+    ports:
+      - '8080:80'
+    volumes:
+      - /var/lib/pgadmin/data:/root/.pgadmin
+    env_file:
+      - docker.env
+    networks:
+      # - postgres
+      - matcha-network
+
+  redis:
+    container_name: matcha-redis
+    image: redis:latest
+    restart: always
+    ports:
+      - '6379:6379'
+    volumes:
+      - redis-data:/data
+    networks:
+      - matcha-network
+
+  # elasticsearch:
+  #   container_name: matcha-elasticsearch
+  #   image: docker.elastic.co/elasticsearch/elasticsearch:8.15.1
+  #   environment:
+  #     - discovery.type=single-node
+  #     - ES_JAVA_OPTS=-Xms512m -Xmx512m
+  #     - ELASTIC_PASSWORD=${ELASTICSEARCH_PASSWORD}
+  #   ports:
+  #     - '9200:9200'
+  #     - '9300:9300'
+  #   volumes:
+  #     - elasticsearch-data:/usr/share/elasticsearch/data
+  #   networks:
+  #     - matcha-network
+
+  es01:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.15.1
+    container_name: es01
+    environment:
+      - node.name=es01
+      - cluster.name=es-docker-cluster
+      - discovery.seed_hosts=es02,es03
+      - cluster.initial_master_nodes=es01,es02,es03
+      - bootstrap.memory_lock=true
+      - xpack.security.enabled=false
+      - 'ES_JAVA_OPTS=-Xms512m -Xmx512m'
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    volumes:
+      - data01:/usr/share/elasticsearch/data
+    ports:
+      - 9200:9200
+    networks:
+      - elastic
+
+  # es02:
+  #   image: docker.elastic.co/elasticsearch/elasticsearch:8.15.1
+  #   container_name: es02
+  #   environment:
+  #     - node.name=es02
+  #     - cluster.name=es-docker-cluster
+  #     - discovery.seed_hosts=es01,es03
+  #     - cluster.initial_master_nodes=es01,es02,es03
+  #     - bootstrap.memory_lock=true
+  #     - xpack.security.enabled=false
+  #     - 'ES_JAVA_OPTS=-Xms512m -Xmx512m'
+  #   ulimits:
+  #     memlock:
+  #       soft: -1
+  #       hard: -1
+  #   volumes:
+  #     - data02:/usr/share/elasticsearch/data
+  #   networks:
+  #     - elastic
+
+  # es03:
+  #   image: docker.elastic.co/elasticsearch/elasticsearch:8.15.1
+  #   container_name: es03
+  #   environment:
+  #     - node.name=es03
+  #     - cluster.name=es-docker-cluster
+  #     - discovery.seed_hosts=es01,es02
+  #     - cluster.initial_master_nodes=es01,es02,es03
+  #     - bootstrap.memory_lock=true
+  #     - xpack.security.enabled=false
+  #     - 'ES_JAVA_OPTS=-Xms512m -Xmx512m'
+  #   ulimits:
+  #     memlock:
+  #       soft: -1
+  #       hard: -1
+  #   volumes:
+  #     - data03:/usr/share/elasticsearch/data
+  #   networks:
+  #     - elastic
+
+volumes:
+  # data01:
+  postgis-data:
+    driver: local
+  # data03:
+  redis-data:
+    driver: local
+  # postgis-data:
+  # elasticsearch-data:
+  #   driver: local
+  data01:
+    driver: local
+  # data02:
+  #   driver: local
+  # data03:
+  #   driver: local
+networks:
+  matcha-network:
+    driver: bridge
+  elastic:
+    driver: bridge
