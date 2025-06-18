@@ -32,26 +32,22 @@ This project is the backend for the Matcha application. It uses Node.js, NestJS,
 
 ## Configuration
 
-Create a `.env` file in the root directory of the project and add the following environment variables:
+Create a .env file in the root directory of the project and add the following environment variables:
 
-```
 # .env
 NODE_ENV=development
 DATABASE_URL=postgres://user:password@matcha-postgres:5432/matcha
 PGADMIN_DEFAULT_EMAIL=admin@example.com
 PGADMIN_DEFAULT_PASSWORD=admin
-```
 
-Create a `docker.env` file in the root directory of the project and add the following environment variables:
+Create a docker.env file in the root directory of the project and add the following environment variables:
 
-```
 # docker.env
 POSTGRES_USER=user
 POSTGRES_PASSWORD=password
 POSTGRES_DB=matcha
 PGADMIN_DEFAULT_EMAIL=admin@example.com
 PGADMIN_DEFAULT_PASSWORD=admin
-```
 
 ## Running the Project
 
@@ -59,57 +55,41 @@ PGADMIN_DEFAULT_PASSWORD=admin
 
 To run the project in production mode, use the following command:
 
-```sh
 docker-compose up
-```
 
 ### Development
 
 To run the project in development mode, use the following command:
 
-```sh
 docker compose -f docker-compose.dev.yaml up -d
-```
 
 Then run:
 
-```sh
 pnpm run start:dev
-```
 
-Alternatively, you can use the script defined in `package.json`:
+Alternatively, you can use the script defined in package.json:
 
-```sh
 pnpm run docker:dev
-```
 
-This will start the services defined in `docker-compose.dev.yaml`.
+This will start the services defined in docker-compose.dev.yaml.
 
 ## Database Migrations
 
 To create a new migration, use the following command:
 
-```sh
 pnpm run migration:create --name=MigrationName
-```
 
 To generate a migration based on changes in your entities, use:
 
-```sh
 pnpm run migration:generate --name=MigrationName
-```
 
 To run all pending migrations, use:
 
-```sh
 pnpm run migration:run
-```
 
 To revert the last migration, use:
 
-```sh
 pnpm run migration:revert
-```
 
 ## Building the Application
 
@@ -117,25 +97,24 @@ The application is built using a multi-stage Dockerfile. The build process inclu
 
 ## Services
 
-- **PostgreSQL**: The database service.
-- **pgAdmin**: A web-based database management tool (only in development).
-- **App**: The main application service.
+- *PostgreSQL*: The database service.
+- *pgAdmin*: A web-based database management tool (only in development).
+- *App*: The main application service.
 
 ## Volumes
 
-- `data01`, `data02`, `data03`: Volumes for Elasticsearch data (currently commented out).
-- `/var/lib/postgresql/data`: Volume for PostgreSQL data.
-- `/var/lib/pgadmin/data`: Volume for pgAdmin data (only in development).
+- data01, data02, data03: Volumes for Elasticsearch data (currently commented out).
+- /var/lib/postgresql/data: Volume for PostgreSQL data.
+- /var/lib/pgadmin/data: Volume for pgAdmin data (only in development).
 
 ## Networks
 
-- `postgres`: Network for PostgreSQL and pgAdmin.
-- `app-network`: Network for the main application.
-- `elastic`: Network for Elasticsearch services (currently commented out).
+- postgres: Network for PostgreSQL and pgAdmin.
+- app-network: Network for the main application.
+- elastic: Network for Elasticsearch services (currently commented out).
 
 ## SQL Table Definitions
 
-```sql
 CREATE TABLE users (
   user_id SERIAL PRIMARY KEY,
   email VARCHAR(255) NOT NULL UNIQUE,
@@ -218,7 +197,6 @@ CREATE TABLE user_interests (
   user_id INT NOT NULL REFERENCES users(user_id),
   interest_id INT NOT NULL REFERENCES interests(interest_id)
 );
-```
 
 ## Description
 
@@ -226,13 +204,10 @@ CREATE TABLE user_interests (
 
 ## Installation
 
-```bash
 $ pnpm install
-```
 
 ## Running the app
 
-```bash
 # development
 $ pnpm run start
 
@@ -241,11 +216,9 @@ $ pnpm run start:dev
 
 # production mode
 $ pnpm run start:prod
-```
 
 ## Test
 
-```bash
 # unit tests
 $ pnpm run test
 
@@ -254,7 +227,6 @@ $ pnpm run test:e2e
 
 # test coverage
 $ pnpm run test:cov
-```
 
 ## Support
 
@@ -263,17 +235,17 @@ Nest is an MIT-licensed open source project. It can grow thanks to the sponsors 
 ## License
 
 Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
-
+% build again (*)
 Local:
-aws ecr get-login-password --region ap-southeast-1 | docker login --username AWS --password-stdin 443370692619.dkr.ecr.ap-southeast-1.amazonaws.com
+aws ecr get-login-password --region ap-southeast-1 | docker login --username AWS --password-stdin 555622622153.dkr.ecr.ap-southeast-1.amazonaws.com/matcha-app
 
 docker buildx build --platform linux/amd64 -t matcha-app:latest .
 
-docker tag matcha-app:latest 443370692619.dkr.ecr.ap-southeast-1.amazonaws.com/matcha-app:latest
-docker push 443370692619.dkr.ecr.ap-southeast-1.amazonaws.com/matcha-app:latest
+docker tag matcha-app:latest 555622622153.dkr.ecr.ap-southeast-1.amazonaws.com/matcha-app:latest
+docker push 555622622153.dkr.ecr.ap-southeast-1.amazonaws.com/matcha-app:latest
 
 EC2:
-docker pull 443370692619.dkr.ecr.ap-southeast-1.amazonaws.com/matcha-app:latest
+docker pull 555622622153.dkr.ecr.ap-southeast-1.amazonaws.com/matcha-app:latest
 
 docker-compose down
 docker-compose up -d
@@ -285,6 +257,7 @@ docker-compose logs -f
 
 # Remove all stopped containers
 
+% mỗi lần push lên, cần xoá data cũ trên ec2
 docker container prune -f
 
 # Remove all unused images
@@ -302,3 +275,4 @@ docker network prune -f
 # Clean up apt cache (optional)
 
 sudo apt-get clean
+nestjs.com

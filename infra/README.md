@@ -64,14 +64,14 @@ Before running the Terraform configuration, you need to create an S3 bucket and 
 
 ```bash
 # Create S3 bucket for Terraform state
-aws s3api create-bucket --bucket matcha-terraform-toandev --region ap-southeast-1 --create-bucket-configuration LocationConstraint=ap-southeast-1
+aws s3api create-bucket --bucket matcha-terraform-hinhbx --region ap-southeast-1 --create-bucket-configuration LocationConstraint=ap-southeast-1
 
 # Enable versioning on the bucket
-aws s3api put-bucket-versioning --bucket matcha-terraform-toandev --versioning-configuration Status=Enabled
+aws s3api put-bucket-versioning --bucket matcha-terraform-hinhbx --versioning-configuration Status=Enabled
 
 # Create DynamoDB table for state locking
 aws dynamodb create-table \
-  --table-name matcha-terraform-toandev-locks \
+  --table-name matcha-terraform-hinhbx-locks \
   --attribute-definitions AttributeName=LockID,AttributeType=S \
   --key-schema AttributeName=LockID,KeyType=HASH \
   --billing-mode PAY_PER_REQUEST \
