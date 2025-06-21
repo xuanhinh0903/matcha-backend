@@ -2,6 +2,7 @@ import { Module, Global } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { RedisModule as NestRedisModule } from '@liaoliaots/nestjs-redis';
 import { REDIS_CLIENT } from './redis.constants';
+import type Redis from 'ioredis';
 
 @Global()
 @Module({
@@ -23,6 +24,29 @@ import { REDIS_CLIENT } from './redis.constants';
         return {
           config: redisConfig,
           readyLog: true,
+          // Add event listeners for connection events
+          onClientCreated: (client: Redis) => {
+            // Log when Redis connects successfully
+            client.on('connect', () => {
+              console.log('[Redis] Connecting...');
+            });
+            // Log when Redis is ready to use
+            client.on('ready', () => {
+              console.log('[Redis] Connection established and ready!');
+            });
+            // Log when Redis disconnects
+            client.on('end', () => {
+              console.warn('[Redis] Disconnected from server.');
+            });
+            // Log when Redis is reconnecting
+            client.on('reconnecting', () => {
+              console.log('[Redis] Attempting to reconnect...');
+            });
+            // Log when Redis encounters an error
+            client.on('error', (err: Error) => {
+              console.error('[Redis] Connection error:', err);
+            });
+          },
         };
       },
       inject: [ConfigService],

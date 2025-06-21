@@ -1,1 +1,1 @@
-# No outputs needed, all outputs are in main.tf now
+# Outputs are defined in main.tf to avoid duplication

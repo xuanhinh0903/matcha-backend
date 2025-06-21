@@ -19,6 +19,8 @@ resource "aws_subnet" "public" {
   tags = { Name = "matcha-minimal-public-subnet" }
 }
 
+# Second subnet removed - not needed for simple nginx setup
+
 data "aws_availability_zones" "available" {}
 
 resource "aws_internet_gateway" "gw" {
@@ -40,24 +42,63 @@ resource "aws_route_table_association" "public" {
   route_table_id = aws_route_table.public.id
 }
 
+# Simplified security group for EC2 instances
 resource "aws_security_group" "open" {
   name        = "matcha-minimal-open-sg"
-  description = "Allow all inbound for demo purposes"
+  description = "Allow HTTP, HTTPS, SSH and app port access"
   vpc_id      = aws_vpc.main.id
 
+  # HTTP access
   ingress {
-    from_port   = 0
-    to_port     = 0
-    protocol    = "-1"
+    from_port   = 80
+    to_port     = 80
+    protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
   }
+
+  # HTTPS access
+  ingress {
+    from_port   = 443
+    to_port     = 443
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  # SSH access
+  ingress {
+    from_port   = 22
+    to_port     = 22
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  # App port for direct access during setup
+  ingress {
+    from_port   = 3030
+    to_port     = 3030
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  # Allow all services within VPC to communicate
+  ingress {
+    from_port   = 0
+    to_port     = 65535
+    protocol    = "tcp"
+    cidr_blocks = ["10.0.0.0/16"]
+  }
+
   egress {
     from_port   = 0
     to_port     = 0
     protocol    = "-1"
     cidr_blocks = ["0.0.0.0/0"]
   }
+
+  tags = { Name = "matcha-ec2-sg" }
 }
+
+# SSL will be handled by nginx + certbot on the EC2 instance
 
 resource "aws_key_pair" "deployer" {
   key_name   = "matcha-minimal-key"
