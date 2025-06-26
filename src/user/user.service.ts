@@ -36,6 +36,15 @@ export class UserService {
     );
   }
 
+  async getByFirebaseUid(firebaseUid: string): Promise<User | null> {
+    const user = await this.userRepository.findOne({
+      where: {
+        firebase_uid: firebaseUid,
+      },
+    });
+    return user;
+  }
+
   async getById(id: number) {
     const user = await this.userRepository.findOne({
       where: {

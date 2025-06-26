@@ -64,8 +64,27 @@ export class UserController {
           example: 'male',
         },
         location: {
-          type: 'string',
-          example: '(-74.006, 40.7128)',
+          type: 'object',
+          properties: {
+            type: {
+              type: 'string',
+              enum: ['Point'],
+              example: 'Point',
+            },
+            coordinates: {
+              type: 'array',
+              items: { type: 'number' },
+              minItems: 2,
+              maxItems: 2,
+              example: [105.8542, 21.0285],
+              description: 'Array of [longitude, latitude]',
+            },
+          },
+          required: ['type', 'coordinates'],
+          example: {
+            type: 'Point',
+            coordinates: [105.8542, 21.0285],
+          },
         },
         bio: { type: 'string', example: 'This is a bio' },
       },

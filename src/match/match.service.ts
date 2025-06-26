@@ -427,34 +427,6 @@ export class MatchService {
         });
       }
 
-      // Optimize location filtering with spatial index
-      if (
-        location?.lat &&
-        location?.lon &&
-        !isNaN(location.lat) &&
-        !isNaN(location.lon) &&
-        range &&
-        !isNaN(range)
-      ) {
-        // Use ST_DWithin for better performance with spatial indexes
-        query.andWhere(
-          `
-          user.location IS NOT NULL AND 
-          ST_DWithin(
-            user.location, 
-            ST_SetSRID(ST_MakePoint(:lon, :lat), 4326),
-            :rangeInMeters
-          )
-        `,
-          {
-            lon: location.lon,
-            lat: location.lat,
-            // Convert km to meters for ST_DWithin
-            rangeInMeters: range * 1000,
-          },
-        );
-      }
-
       // Handle interest filtering with a more efficient approach
       if (interests) {
         const interestIds = interests
@@ -481,6 +453,19 @@ export class MatchService {
         }
       }
 
+      //       // Filter users who have location data (distance calculation will be done in post-processing)
+      if (
+        location?.lat &&
+        location?.lon &&
+        !isNaN(location.lat) &&
+        !isNaN(location.lon) &&
+        range &&
+        !isNaN(range)
+      ) {
+        // Only require location to be not null, distance filtering will be done with geolib
+        query.andWhere('user.location IS NOT NULL');
+      }
+
       // Set up randomized but stable ordering for consistent pagination
       const randomSeed = Math.floor(
         Math.floor(Date.now() / (3600 * 1000)) % 10000,
@@ -499,9 +484,9 @@ export class MatchService {
       // Execute the optimized query
       const users = await query.getMany();
 
-      // Post-process users efficiently - calculate age once and handle location data
+      // Post-process users efficiently - calculate age and distance, then filter by range
       const currentYear = new Date().getFullYear();
-      const processedUsers = users.map((user) => {
+      let processedUsers = users.map((user) => {
         const age = currentYear - new Date(user.birthdate).getFullYear();
 
         // Calculate distance if both locations available
@@ -513,11 +498,10 @@ export class MatchService {
 
             if (userCoords && userCoords.length === 2) {
               // userCoords is [longitude, latitude] in GeoJSON format
-              distance =
-                geolib.getDistance(
-                  { latitude: location.lat, longitude: location.lon },
-                  { latitude: userCoords[1], longitude: userCoords[0] },
-                ) / 1000; // Convert to kilometers
+              distance = geolib.getDistance(
+                { latitude: userCoords[1], longitude: userCoords[0] },
+                { latitude: location.lat, longitude: location.lon },
+              ) / 1000; // Convert to kilometers
             }
           } catch (e) {
             console.error('Error calculating distance:', e);
@@ -528,12 +512,28 @@ export class MatchService {
         const result = {
           ...user,
           age,
-          distance, // Add distance to result
+          distance, // Add distance to result (in kilometers)
         };
 
         delete result.password; // Remove sensitive data
         return result;
       });
+
+      // Filter users by distance range if location and range are provided
+      if (location?.lat && location?.lon && range && !isNaN(range)) {
+        processedUsers = processedUsers.filter((user) => {
+          return user.distance !== null && user.distance <= range;
+        });
+
+        // Sort by distance (nearest first) when location filtering is applied
+        processedUsers.sort((a, b) => {
+          if (a.distance === null) return 1;
+          if (b.distance === null) return -1;
+          return a.distance - b.distance;
+        });
+      }
+
+      console.log('🚀 ~ MatchService ~ processedUsers ~ count after filtering:', processedUsers.length);
 
       // Log performance metrics
       const executionTime = Date.now() - startTime;
@@ -541,9 +541,20 @@ export class MatchService {
         `getUsersForMatching completed in ${executionTime}ms, found ${users.length} matches`,
       );
 
+      // Apply pagination to filtered results if location filtering was applied
+      let paginatedUsers = processedUsers;
+      let finalTotal = totalCount;
+
+      if (location?.lat && location?.lon && range && !isNaN(range)) {
+        // When location filtering is applied, we need to paginate the filtered results
+        finalTotal = processedUsers.length;
+        const startIndex = (page - 1) * limit;
+        paginatedUsers = processedUsers.slice(startIndex, startIndex + limit);
+      }
+
       return {
-        users: processedUsers,
-        total: totalCount,
+        users: paginatedUsers,
+        total: finalTotal,
         page,
         limit,
       };

@@ -6,6 +6,7 @@ import {
   IsEnum,
   IsOptional,
   IsString,
+  IsNumber,
   ValidateNested,
 } from 'class-validator';
 
@@ -14,7 +15,7 @@ class GeoPoint {
   type: 'Point';
 
   @IsOptional()
-  @IsString({ each: true })
+  @IsNumber({}, { each: true })
   coordinates: [number, number];
 }
 
@@ -66,4 +67,8 @@ export class UpdateUserDto {
   @IsDate()
   @Type(() => Date)
   ban_expires_at?: Date;
+
+  @IsOptional()
+  @IsString()
+  firebase_uid?: string;
 }

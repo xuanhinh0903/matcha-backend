@@ -3,7 +3,7 @@ import { config } from 'dotenv';
 
 config();
 
-  const isProduction =  true;
+const isProduction =  process.env.NODE_ENV === 'production';
 const AppDataSource = new DataSource({
   type: 'postgres',
   url: isProduction ? process.env.DATABASE_URL : undefined,

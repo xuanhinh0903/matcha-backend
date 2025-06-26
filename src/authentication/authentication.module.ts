@@ -9,6 +9,7 @@ import { JwtModule } from '@nestjs/jwt';
 import { JwtStrategy } from './strategies/jwt.strategy';
 import { JwtRefreshTokenStrategy } from './strategies/jwt-refresh-token.strategy';
 import { RolesGuard } from './guards/roles.guard';
+import { FirebaseService } from './firebase/firebase.service';
 
 @Module({
   imports: [
@@ -32,6 +33,7 @@ import { RolesGuard } from './guards/roles.guard';
   ],
   providers: [
     AuthenticationService,
+    FirebaseService,
     LocalStrategy,
     JwtStrategy,
     JwtRefreshTokenStrategy,

@@ -32,9 +32,13 @@ export class User {
   @Column({ unique: true, nullable: true })
   phone_number: string;
 
-  @Column()
+  @Column({ nullable: true })
   @Exclude()
   password: string;
+
+  // Firebase UID for Google Sign-In users
+  @Column({ unique: true, nullable: true })
+  firebase_uid: string;
 
   @Column({ nullable: true })
   full_name: string;

@@ -9,7 +9,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
       inject: [ConfigService],
       useFactory: (configService: ConfigService) => {
         const logger = new Logger('DatabaseModule');
-        const isProduction = true;
+        const isProduction = configService.get('NODE_ENV') === 'production';
 
         // For production, use the complete DATABASE_URL
         if (isProduction) {
