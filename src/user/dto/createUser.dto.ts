@@ -1,4 +1,5 @@
 import { IsEmail, IsNotEmpty, IsOptional, IsString, IsStrongPassword, IsBoolean } from 'class-validator';
+import { Point } from 'geojson';
 
 export class CreateUserDto {
   @IsEmail()
@@ -20,6 +21,9 @@ export class CreateUserDto {
   @IsOptional()
   @IsBoolean()
   is_verified?: boolean;
+
+  @IsOptional()
+  location?: Point;
 }
 
 export default CreateUserDto;

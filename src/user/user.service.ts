@@ -65,7 +65,19 @@ export class UserService {
   }
 
   async createUser(createUserDto: CreateUserDto) {
-    const newUser = this.userRepository.create(createUserDto);
+    // Tự động thêm vị trí mặc định nếu user chưa có location
+    // Default location: Hanoi, Vietnam (105.772382, 21.0779701)
+    const defaultLocation = {
+      type: 'Point' as const,
+      coordinates: [105.772382, 21.0779701],
+    };
+
+    const newUser = this.userRepository.create({
+      ...createUserDto,
+      // Chỉ thêm location mặc định nếu user chưa có location
+      location: createUserDto.location || defaultLocation,
+    });
+    
     await this.userRepository.save(newUser);
     return newUser;
   }
@@ -416,8 +428,21 @@ export class UserService {
       }
     }
 
+    // Luôn thêm location mặc định khi update user
+    // Default location: Hanoi, Vietnam (105.772382, 21.0779701)  
+    const defaultLocation = {
+      type: 'Point' as const,
+      coordinates: [105.772382, 21.0779701],
+    };
+
+    const updatedData = {
+      ...updateUserDto,
+      // Luôn set location mặc định bất kể người dùng có truyền location hay không
+      location: defaultLocation,
+    };
+
     try {
-      await this.userRepository.update(userId, updateUserDto);
+      await this.userRepository.update(userId, updatedData);
     } catch (error) {
       if (
         error.message.includes('duplicate key value violates unique constraint')

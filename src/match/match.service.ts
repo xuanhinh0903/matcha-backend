@@ -358,6 +358,7 @@ export class MatchService {
     range?: number,
     ageRange?: { min: number; max: number },
     interests?: string,
+    name?: string,
   ) {
     // Performance tracking
     const startTime = Date.now();
@@ -464,6 +465,10 @@ export class MatchService {
       ) {
         // Only require location to be not null, distance filtering will be done with geolib
         query.andWhere('user.location IS NOT NULL');
+      }
+
+      if (name) {
+        query.andWhere('user.full_name ILIKE :name', { name: `%${name}%` });
       }
 
       // Set up randomized but stable ordering for consistent pagination

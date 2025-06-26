@@ -17,7 +17,7 @@ import RequestWithUser from 'src/authentication/interfaces/requestWithUser.inter
 @UseGuards(JwtGuard)
 @Controller('match')
 export class MatchController {
-  constructor(private readonly matchService: MatchService) {}
+  constructor(private readonly matchService: MatchService) { }
 
   @Post('like/:userId')
   async likeUser(@Req() req: RequestWithUser, @Param('userId') userId: number) {
@@ -55,6 +55,13 @@ export class MatchController {
     description: 'Page number for pagination',
     example: 1,
     default: 1,
+  })
+  @ApiQuery({
+    name: 'name',
+    required: false,
+    description: 'Name',
+    example: "Xuan Hinh",
+    default: "Xuan Hinh",
   })
   @ApiQuery({
     name: 'limit',
@@ -99,8 +106,16 @@ export class MatchController {
     description: 'Maximum age of the partner',
     example: 30,
   })
+  @ApiQuery({
+    name: 'interests',
+    required: false,
+    description: 'Interests',
+    example: "1,2,3",
+    default: "1,2,3",
+  })
   async getUsersForMatching(
     @Req() req: RequestWithUser,
+    @Query('name') name?: string,
     @Query('page') page: number = 1,
     @Query('limit') limit: number = 10,
     @Query('lat') lat?: number,
@@ -120,6 +135,7 @@ export class MatchController {
       range,
       minAge && maxAge ? { min: minAge, max: maxAge } : undefined,
       interests,
+      name,
     );
   }
 

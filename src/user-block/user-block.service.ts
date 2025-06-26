@@ -71,14 +71,43 @@ export class UserBlockService {
   async getBlockedUsers(userId: number) {
     const blockedUsers = await this.userBlockRepository.find({
       where: { blocker: { user_id: userId } },
-      relations: ['blocked'], // Lấy thông tin của user bị block
+      relations: ['blocked', 'blocked.photos'], // Load user bị block và photos của họ
+      select: {
+        blocked: {
+          user_id: true,
+          email: true,
+          full_name: true,
+          birthdate: true,
+          gender: true,
+          bio: true,
+          photos: {
+            photo_id: true,
+            photo_url: true,
+            photo_url_thumbnail: true,
+            is_profile_picture: true,
+            uploaded_at: true,
+          },
+        },
+      },
     });
 
-    return blockedUsers.map((block) => ({
-      user_id: block.blocked.user_id,
-      email: block.blocked.email,
-      full_name: block.blocked.full_name,
-    }));
+    return blockedUsers.map((block) => {
+      // Calculate age from birthdate if available
+      const age = block.blocked.birthdate 
+        ? new Date().getFullYear() - new Date(block.blocked.birthdate).getFullYear()
+        : null;
+
+      return {
+        user_id: block.blocked.user_id,
+        email: block.blocked.email,
+        full_name: block.blocked.full_name,
+        age,
+        gender: block.blocked.gender,
+        bio: block.blocked.bio,
+        photos: block.blocked.photos || [],
+        blocked_at: block.blocked_at,
+      };
+    });
   }
 
   // Check if either user has blocked the other
