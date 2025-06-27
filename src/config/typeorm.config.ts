@@ -16,7 +16,7 @@ const AppDataSource = new DataSource({
   database: isProduction ? undefined : process.env.POSTGRES_DB,
   synchronize: false,
   entities: ['dist/**/*.entity.js', 'src/**/*.entity.ts'], // Ensure correct entity paths
-  migrations: ['dist/src/database/migrations/**/*{.ts,.js}'],
+  migrations: ['src/database/migrations/**/*{.ts,.js}'],
   migrationsRun: false,
   logging: true,
   installExtensions: true,
